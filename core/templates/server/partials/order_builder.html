@@ -1,0 +1,36 @@
+    <dialog id="order-builder" data-mode="{{ builder_mode|default:'create' }}" aria-labelledby="builder-title" aria-describedby="preview-note">
+        <div class="builder-heading">
+            <div>
+                <p class="eyebrow">{% if builder_mode == "edit" %}EDIT ORDER{% else %}NEW ORDER{% endif %}</p>
+                <h2 id="builder-title">Create order</h2>
+            </div>
+            <button type="button" id="close-builder">{% if builder_mode == "edit" %}Cancel changes{% else %}Back to tables{% endif %}</button>
+        </div>
+        <p id="preview-note">UI preview · Sample menu and prices. Orders are not saved.</p>
+
+        <div class="builder-layout">
+            <section aria-labelledby="menu-title">
+                <h3 id="menu-title">Menu</h3>
+                <label for="menu-search">Search menu</label>
+                <input id="menu-search" type="search" placeholder="Find an item…">
+                <label for="menu-category">Category</label>
+                <select id="menu-category">
+                    <option value="all">All categories</option>
+                    <option value="Pizza">Pizza</option>
+                    <option value="Sides">Sides</option>
+                    <option value="Drinks">Drinks</option>
+                </select>
+                <div id="preview-menu" class="preview-menu"></div>
+            </section>
+
+            <section class="order-summary" aria-labelledby="summary-title">
+                <h3 id="summary-title">Your order</h3>
+                <div id="cart-items"></div>
+                <label for="order-note">Order notes <small>Optional</small></label>
+                <textarea id="order-note" rows="3" maxlength="255" placeholder="Add a note for this order"></textarea>
+                <p class="order-subtotal">Subtotal <strong id="cart-total">$0.00</strong></p>
+                <button type="button" id="place-order" disabled>{% if builder_mode == "edit" %}Save changes (preview){% else %}Place order (preview){% endif %}</button>
+                <p id="order-feedback" role="status" aria-live="polite"></p>
+            </section>
+        </div>
+    </dialog>
