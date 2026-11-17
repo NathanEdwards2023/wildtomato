@@ -1,0 +1,85 @@
+{% extends "server/base.html" %}
+{% load static %}
+
+{% block title %}Order #{{ order.pk }}{% endblock %}
+
+{% block content %}
+    <a href="{% url 'home' %}">&larr; Active tables</a>
+
+    <div class="page-heading">
+        <div>
+            <p class="eyebrow">{{ order.table.name }}</p>
+            <h1>Order #{{ order.pk }}</h1>
+        </div>
+        <span class="badge">{{ order.get_status_display }}</span>
+    </div>
+
+    <section class="table-card" aria-label="Order details">
+        <dl>
+            <dt>Table</dt>
+            <dd>{{ order.table.name }}</dd>
+
+            <dt>Server</dt>
+            <dd>{{ order.employee }}</dd>
+
+            <dt>Opened</dt>
+            <dd>{{ order.order_time|date:"M j, Y, g:i A" }}</dd>
+
+            <dt>Status</dt>
+            <dd>{{ order.get_status_display }}</dd>
+        </dl>
+    </section>
+
+    {% if order.status == 'open' %}
+        <section class="table-card preview-order-items" aria-labelledby="preview-items-title">
+            <h2 id="preview-items-title">Order items preview</h2>
+            <p>Sample items for trying the editor, not this order's database items. Changes reset when you reload.</p>
+            <div id="saved-preview-items"></div>
+            <p id="saved-preview-note"></p>
+            <p class="order-subtotal">Preview subtotal <strong id="saved-preview-total"></strong></p>
+            <p id="saved-preview-feedback" role="status"></p>
+        </section>
+
+        <div class="checkout-actions">
+            <button type="button" class="select-table" data-table-id="{{ order.table_id }}" data-table-name="{{ order.table.name }}">Edit order / Add items</button>
+            <button type="button" id="open-payment">Close table / Take payment</button>
+        </div>
+
+        {% include "server/partials/order_builder.html" with builder_mode="edit" %}
+
+        <dialog id="payment-dialog" aria-labelledby="payment-title" aria-describedby="payment-preview-note">
+            <div class="builder-heading">
+                <div>
+                    <p class="eyebrow">{{ order.table.name }} · ORDER #{{ order.pk }}</p>
+                    <h2 id="payment-title">Take payment</h2>
+                </div>
+                <button type="button" id="cancel-payment">Back to order</button>
+            </div>
+
+            <p id="payment-preview-note">UI preview only. No payment will be recorded and the table will stay active.</p>
+            <p class="payment-total">Order total <strong>Not available yet</strong></p>
+
+            <form id="payment-preview-form">
+                <fieldset>
+                    <legend>Payment method</legend>
+                    <label><input type="radio" name="payment_method" value="cash" checked> Cash</label>
+                    <label><input type="radio" name="payment_method" value="card"> Card</label>
+                </fieldset>
+
+                <label for="payment-tip">Tip amount ($)</label>
+                <input id="payment-tip" name="tip" type="number" min="0" step="0.01" value="0.00" required>
+
+                <p>After payment is recorded, this order will close and the table will become available.</p>
+                <button type="submit">Preview payment confirmation</button>
+                <p id="payment-feedback" role="status" aria-live="polite"></p>
+            </form>
+        </dialog>
+    {% endif %}
+{% endblock %}
+
+{% block scripts %}
+    {% if order.status == 'open' %}
+        <script src="{% static 'core/js/order_builder.js' %}?v=edit-2" defer></script>
+    {% endif %}
+    <script src="{% static 'core/js/payment_preview.js' %}" defer></script>
+{% endblock %}

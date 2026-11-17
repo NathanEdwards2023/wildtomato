@@ -1,0 +1,44 @@
+{% extends "server/base.html" %}
+{% load static %}
+
+{% block title %}Available tables{% endblock %}
+
+{% block scripts %}
+    <script src="{% static 'core/js/order_builder.js' %}" defer></script>
+{% endblock %}
+
+{% block content %}
+    <div class="page-heading">
+        <div>
+            <p class="eyebrow">YOUR FLOOR</p>
+            <h1>Available tables</h1>
+            <p>Tables with no open order are available for your next guests.</p>
+        </div>
+
+        <a class="button" href="{% url 'available_tables' %}">Refresh tables</a>
+    </div>
+
+    <p>{{ available_tables|length }} available table{{ available_tables|length|pluralize }}</p>
+
+    <section class="table-grid" aria-label="Available tables">
+        {% for table in available_tables %}
+            <article class="table-card">
+                <div class="card-heading">
+                    <h2>{{ table.name }}</h2>
+                    <span class="badge">Available</span>
+                </div>
+                <p>{{ table.seats }} seat{{ table.seats|pluralize }}</p>
+                <button class="select-table" type="button" data-table-id="{{ table.pk }}" data-table-name="{{ table.name }}">
+                    Create order for {{ table.name }} &rarr;
+                </button>
+            </article>
+        {% empty %}
+            <div class="empty-state">
+                <h2>No available tables</h2>
+                <p>No tables are currently available. Refresh to check again.</p>
+            </div>
+        {% endfor %}
+    </section>
+
+    {% include "server/partials/order_builder.html" %}
+{% endblock %}
