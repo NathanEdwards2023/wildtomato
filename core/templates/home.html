@@ -1,19 +1,18 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Wild Tomato</title>
-</head>
-<body>
-    <h1>Something about a tomato</h1>
-    {% if user.is_authenticated %}
-        <p>Welcome, {{ user.get_username }}!</p>
-        <form method="post" action="{% url 'logout' %}">
-            {% csrf_token %}
-            <button type="submit">Log out</button>
-        </form>
-    {% else %}
-        <a href="{% url 'login' %}">Log in</a>
-    {% endif %}
-</body>
-</html>
+{% extends "dashboard_base.html" %}
+{% load static %}
+{% block content %}
+<div class="page-heading"><div><p class="eyebrow">YOUR FLOOR</p><h1>Active tables</h1>
+<p>Your open orders, all in one place. Select an order to view its details.</p></div>
+<a class="button" href="{% url 'home' %}">Refresh tables</a></div>
+<p>{{ active_tables|length }} active table{{ active_tables|length|pluralize }}</p>
+<section class="table-grid" aria-label="Your active tables">
+{% for table in active_tables %}
+<article class="table-card"><div class="card-heading"><h2>{{ table.name }}</h2><span class="badge">Open</span></div>
+{% for order in table.active_orders %}
+<a class="order-link" href="{% url 'order_detail' order.pk %}"><span><strong>Order #{{ order.pk }}</strong><small>Opened {{ order.order_time|date:"M j, g:i A" }}</small></span><span>View order &rarr;</span></a>
+{% endfor %}</article>
+{% empty %}
+<div class="empty-state"><h2>No active tables</h2><p>Tables appear here when you have an open order assigned to you.</p></div>
+{% endfor %}</section>
+{% endblock %}
+{% block scripts %}<script src="{% static 'core/js/tables.js' %}" defer></script>{% endblock %}

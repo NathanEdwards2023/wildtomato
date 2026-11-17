@@ -94,6 +94,33 @@ The Django admin is at <http://127.0.0.1:8000/admin/> and accepts your superuser
 
 - Accounts and database records live in MySQL. Committing and pushing do not share them.
 - Teammates using separate databases must import the schema, run migrations, and create their own accounts.
-- The application tables are not yet mapped to Django models. The homepage currently displays static content.
+- The dashboard maps the second-version shared SQL tables using unmanaged Django models. SQL scripts own their schema.
 - SQLite is no longer used. Any old `db.sqlite3` data is not transferred to MySQL.
 - Settings are for local development, with `DEBUG` enabled.
+
+## Active tables dashboard
+
+The dashboard reads `employee`, `dining_table`, and `orders` from the configured
+MySQL database. It uses `employee.user_id` to match the logged-in Django user,
+then displays that employee's open orders grouped by table. Order-detail URLs
+use `orders.number` and enforce the same ownership check. An account without
+an employee login mapping sees no active tables, including superusers.
+
+Prerequisites: import the team's SECOND VERSION table script, run Django
+migrations to create auth tables, then import the team's companion SQL file
+with the login foreign key, constraints, views, and triggers. The repository's
+original `WildTomatoDB.sql` still contains the first-version schema and cannot
+be used to initialize these updated dashboard tables. Do not rerun it as an
+upgrade. Existing shared data must include employee-to-login mappings, table
+assignments, and order statuses.
+
+Run `python manage.py migrate` after pulling. The dashboard mapping migration
+changes Django's model state only: it does not alter shared tables or delete
+the earlier `core_diningtable` / `core_tableorder` prototype data. Those old
+tables are no longer queried, and their records are not copied automatically.
+
+Shared employee, table, and order records are view-only in Django admin.
+Create/update them through the team's SQL-backed workflow. Closing an order
+through that workflow removes it from the dashboard on refresh or returning
+to the tab. Order details currently show table, employee, opening time, and
+status; line items and payments remain separate work.
