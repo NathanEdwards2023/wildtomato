@@ -30,15 +30,21 @@
         </dl>
     </section>
 
+    <section class="table-card preview-order-items" aria-labelledby="line-items-title">
+        <h2 id="line-items-title">Line items</h2>
+        {% for line in line_items %}
+            <div class="cart-item">
+                <strong>{{ line.quantity }} x {{ line.name }} - ${{ line.unit_price }}</strong>
+                {% if line.comment %}<span>Note: {{ line.comment }}</span>{% endif %}
+            </div>
+        {% empty %}
+            <p>No items on this order yet.</p>
+        {% endfor %}
+    </section>
+
     {% if order.status == 'open' %}
-        <section class="table-card preview-order-items" aria-labelledby="preview-items-title">
-            <h2 id="preview-items-title">Order items preview</h2>
-            <p>Sample items for trying the editor, not this order's database items. Changes reset when you reload.</p>
-            <div id="saved-preview-items"></div>
-            <p id="saved-preview-note"></p>
-            <p class="order-subtotal">Preview subtotal <strong id="saved-preview-total"></strong></p>
-            <p id="saved-preview-feedback" role="status"></p>
-        </section>
+        {{ menu|json_script:"menu-data" }}
+        <form id="add-items-form" method="post" action="{% url 'add_items' order.pk %}" hidden>{% csrf_token %}</form>
 
         <div class="checkout-actions">
             <button type="button" class="select-table" data-table-id="{{ order.table_id }}" data-table-name="{{ order.table.name }}">Edit order / Add items</button>
@@ -79,7 +85,7 @@
 
 {% block scripts %}
     {% if order.status == 'open' %}
-        <script src="{% static 'core/js/order_builder.js' %}?v=edit-2" defer></script>
+        <script src="{% static 'core/js/order_builder.js' %}?v=edit-3" defer></script>
     {% endif %}
     <script src="{% static 'core/js/payment_preview.js' %}" defer></script>
 {% endblock %}
