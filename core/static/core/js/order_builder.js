@@ -1,5 +1,6 @@
-// Frontend-only sample menu. No requests or database writes are made here.
-const previewMenu = [
+// On an existing order's page the real menu is supplied by the server; elsewhere a sample menu is used.
+const menuData = document.querySelector("#menu-data");
+const previewMenu = menuData ? JSON.parse(menuData.textContent) : [
     { id: 1, name: "Margherita pizza", category: "Pizza", cents: 1400 },
     { id: 2, name: "Pepperoni pizza", category: "Pizza", cents: 1600 },
     { id: 3, name: "Garden pizza", category: "Pizza", cents: 1550 },
@@ -9,25 +10,8 @@ const previewMenu = [
 ];
 const dialog = document.querySelector("#order-builder");
 const cart = new Map();
+const notes = new Map(); // menu item id -> special request typed for that item
 const editing = dialog.dataset.mode === "edit";
-// Sample existing order for UI demonstration only. Backend will supply real items.
-let savedCart = new Map(editing ? [[1, 1], [6, 2]] : []);
-let savedNote = "";
-
-function renderSavedPreview() {
-    const container = document.querySelector("#saved-preview-items");
-    if (!container) return;
-    container.replaceChildren();
-    let total = 0;
-    for (const [id, quantity] of savedCart) {
-        const item = previewMenu.find(entry => entry.id === id);
-        total += item.cents * quantity;
-        container.append(element("p", `${quantity} x ${item.name} - ${money(item.cents * quantity)}`));
-    }
-    if (!savedCart.size) container.append(element("p", "No items in this preview."));
-    document.querySelector("#saved-preview-total").textContent = money(total);
-    document.querySelector("#saved-preview-note").textContent = savedNote ? `Note: ${savedNote}` : "";
-}
 const money = cents => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(cents / 100);
 const feedback = document.querySelector("#order-feedback");
 let selectedTable = "";
@@ -93,11 +77,25 @@ function renderCart() {
         remove.setAttribute("aria-label", `Remove ${item.name}`);
         remove.addEventListener("click", () => {
             cart.delete(id);
+            notes.delete(id);
             renderCart();
             document.querySelector("#menu-search").focus();
         });
         controls.append(minus, element("span", String(quantity)), plus, remove);
-        row.append(element("strong", item.name), controls, element("span", money(item.cents * quantity)));
+        const noteLabel = element("label", `Note for ${item.name} `);
+        noteLabel.append(element("small", "Optional"));
+        noteLabel.htmlFor = `item-note-${id}`;
+        const noteInput = element("input");
+        noteInput.id = `item-note-${id}`;
+        noteInput.type = "text";
+        noteInput.maxLength = 255;
+        noteInput.placeholder = "e.g. No onions";
+        noteInput.value = notes.get(id) || "";
+        noteInput.addEventListener("input", () => notes.set(id, noteInput.value));
+        const note = element("div");
+        note.style.width = "100%";
+        note.append(noteLabel, noteInput);
+        row.append(element("strong", item.name), controls, element("span", money(item.cents * quantity)), note);
         container.append(row);
     }
     if (!cart.size) container.append(element("p", "No items yet. Add something from the menu."));
@@ -112,8 +110,8 @@ document.querySelectorAll(".select-table").forEach(button => {
         dialog.dataset.tableId = button.dataset.tableId;
         document.querySelector("#builder-title").textContent = `Create order · ${selectedTable}`;
         cart.clear();
-        if (editing) savedCart.forEach((quantity, id) => cart.set(id, quantity));
-        document.querySelector("#order-note").value = editing ? savedNote : "";
+        notes.clear();
+        document.querySelector("#order-note").value = "";
         document.querySelector("#menu-search").value = "";
         document.querySelector("#menu-category").value = "all";
         renderMenu();
@@ -127,14 +125,27 @@ document.querySelector("#menu-category").addEventListener("change", renderMenu);
 document.querySelector("#place-order").addEventListener("click", () => {
     if (!cart.size) return;
     if (editing) {
-        savedCart = new Map(cart);
-        savedNote = document.querySelector("#order-note").value;
-        renderSavedPreview();
-        dialog.close();
-        document.querySelector("#saved-preview-feedback").textContent = "Preview updated on this page only. No database changes were made.";
+        // Send the new items and their notes to the server, which saves them and reloads the order page.
+        const form = document.querySelector("#add-items-form");
+        for (const [id, quantity] of cart) {
+            for (const [name, value] of [["menu_item_id", id], ["quantity", quantity], ["special_request", notes.get(id) || ""]]) {
+                const input = element("input");
+                input.type = "hidden";
+                input.name = name;
+                input.value = value;
+                form.append(input);
+            }
+        }
+        document.querySelector("#place-order").disabled = true;
+        form.submit();
         return;
     }
     feedback.textContent = `Preview complete for ${selectedTable}. No order was saved; the table is still available.`;
 });
 
-if (editing) renderSavedPreview();
+// Fill the category list from the menu.
+for (const category of [...new Set(previewMenu.map(item => item.category))]) {
+    const option = element("option", category);
+    option.value = category;
+    document.querySelector("#menu-category").append(option);
+}
