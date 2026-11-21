@@ -25,6 +25,11 @@
             <dt>Opened</dt>
             <dd>{{ order.order_time|date:"M j, Y, g:i A" }}</dd>
 
+            {% if order.note %}
+                <dt>Notes</dt>
+                <dd>{{ order.note }}</dd>
+            {% endif %}
+
             <dt>Status</dt>
             <dd>{{ order.get_status_display }}</dd>
 
@@ -84,6 +89,8 @@
                 <p id="payment-feedback" role="status" aria-live="polite"></p>
             </form>
         </dialog>
+
+        <form id="order-note-form" method="post" action="{% url 'save_order_note' order.pk %}" hidden>{% csrf_token %}</form>
     {% endif %}
 {% endblock %}
 
@@ -92,4 +99,7 @@
         <script src="{% static 'core/js/order_builder.js' %}?v=edit-12" defer></script>
     {% endif %}
     <script src="{% static 'core/js/payment_preview.js' %}" defer></script>
+    {% if order.status == 'open' %}
+        <script src="{% static 'core/js/order_note.js' %}" defer></script>
+    {% endif %}
 {% endblock %}

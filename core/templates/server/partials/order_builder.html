@@ -24,7 +24,8 @@
                 <h3 id="summary-title">Your order</h3>
                 <div id="cart-items"></div>
                 <label for="order-note">Order notes <small>Optional</small></label>
-                <textarea id="order-note" rows="3" maxlength="255" placeholder="Add a note for this order"></textarea>
+                <textarea id="order-note" rows="3" maxlength="255" placeholder="Add a note for this order"{% if builder_mode == "edit" %} name="order_note" form="order-note-form"{% endif %}>{{ order.note|default:"" }}</textarea>
+                {% if builder_mode == "edit" %}<button type="button" id="save-note" disabled>Save note</button>{% endif %}
                 <p class="order-subtotal">Subtotal <strong id="cart-total">$0.00</strong></p>
                 <button type="button" id="place-order" disabled>{% if builder_mode == "edit" %}Save changes{% else %}Place order{% endif %}</button>
                 <p id="order-feedback" role="status" aria-live="polite"></p>
