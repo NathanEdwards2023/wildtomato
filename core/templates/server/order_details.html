@@ -25,13 +25,13 @@
             <dt>Opened</dt>
             <dd>{{ order.order_time|date:"M j, Y, g:i A" }}</dd>
 
+            {% if order.note %}
+                <dt>Notes</dt>
+                <dd>{{ order.note }}</dd>
+            {% endif %}
+
             <dt>Status</dt>
             <dd>{{ order.get_status_display }}</dd>
-
-            {% if order_note %}
-                <dt>Notes</dt>
-                <dd>{{ order_note }}</dd>
-            {% endif %}
         </dl>
     </section>
 
@@ -86,7 +86,10 @@
 
 {% block scripts %}
     {% if order.status == 'open' %}
-        <script src="{% static 'core/js/order_builder.js' %}?v=edit-4" defer></script>
+        <script src="{% static 'core/js/order_builder.js' %}?v=edit-2" defer></script>
     {% endif %}
     <script src="{% static 'core/js/payment_preview.js' %}" defer></script>
+    {% if order.status == 'open' %}
+        <script src="{% static 'core/js/order_note.js' %}" defer></script>
+    {% endif %}
 {% endblock %}
