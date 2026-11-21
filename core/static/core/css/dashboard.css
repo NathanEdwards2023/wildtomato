@@ -56,6 +56,8 @@ dt { color: #687165; } dd { margin: 0; overflow-wrap: anywhere; }
     border-radius: 6px; font: inherit; background: white; color: inherit;
 }
 .builder-layout textarea { resize: vertical; }
+#order-builder[data-mode="edit"] #order-note:focus-visible { outline-offset: 1px; } /* 3px ring + 1px gap = 4px */
+#save-note { margin-top: 12px; }
 .order-summary { padding: 20px; border: 1px solid #dddcd4; border-radius: 12px; background: white; }
 .menu-item { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 16px 0; border-bottom: 1px solid #dddcd4; }
 .cart-item { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 16px 0; border-bottom: 1px solid #dddcd4; }
