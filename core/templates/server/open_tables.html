@@ -4,7 +4,7 @@
 {% block title %}Available tables{% endblock %}
 
 {% block scripts %}
-    <script src="{% static 'core/js/order_builder.js' %}" defer></script>
+    <script src="{% static 'core/js/order_builder.js' %}?v=create-2" defer></script>
 {% endblock %}
 
 {% block content %}
@@ -40,5 +40,7 @@
         {% endfor %}
     </section>
 
+    {{ menu|json_script:"menu-data" }}
+    <form id="add-items-form" method="post" action="{% url 'create_order' %}" hidden>{% csrf_token %}</form>
     {% include "server/partials/order_builder.html" %}
 {% endblock %}

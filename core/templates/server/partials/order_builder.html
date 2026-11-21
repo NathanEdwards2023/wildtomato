@@ -2,11 +2,11 @@
         <div class="builder-heading">
             <div>
                 <p class="eyebrow">{% if builder_mode == "edit" %}EDIT ORDER{% else %}NEW ORDER{% endif %}</p>
-                <h2 id="builder-title">Create order</h2>
+                <h2 id="builder-title">{% if builder_mode == "edit" %}Edit order{% else %}Create order{% endif %}</h2>
             </div>
             <button type="button" id="close-builder">{% if builder_mode == "edit" %}Cancel changes{% else %}Back to tables{% endif %}</button>
         </div>
-        <p id="preview-note">UI preview · Sample menu and prices. Orders are not saved.</p>
+        <p id="preview-note">{% if builder_mode == "edit" %}New items and their notes are saved to this order.{% else %}Items and their notes are saved when you place the order.{% endif %}</p>
 
         <div class="builder-layout">
             <section aria-labelledby="menu-title">
@@ -16,9 +16,6 @@
                 <label for="menu-category">Category</label>
                 <select id="menu-category">
                     <option value="all">All categories</option>
-                    <option value="Pizza">Pizza</option>
-                    <option value="Sides">Sides</option>
-                    <option value="Drinks">Drinks</option>
                 </select>
                 <div id="preview-menu" class="preview-menu"></div>
             </section>
@@ -29,7 +26,7 @@
                 <label for="order-note">Order notes <small>Optional</small></label>
                 <textarea id="order-note" rows="3" maxlength="255" placeholder="Add a note for this order"></textarea>
                 <p class="order-subtotal">Subtotal <strong id="cart-total">$0.00</strong></p>
-                <button type="button" id="place-order" disabled>{% if builder_mode == "edit" %}Save changes (preview){% else %}Place order (preview){% endif %}</button>
+                <button type="button" id="place-order" disabled>{% if builder_mode == "edit" %}Save changes{% else %}Place order{% endif %}</button>
                 <p id="order-feedback" role="status" aria-live="polite"></p>
             </section>
         </div>
