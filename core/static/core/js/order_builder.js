@@ -113,7 +113,7 @@ document.querySelectorAll(".select-table").forEach(button => {
         document.querySelector("#builder-title").textContent = `Create order · ${selectedTable}`;
         cart.clear();
         if (editing) savedCart.forEach((quantity, id) => cart.set(id, quantity));
-        document.querySelector("#order-note").value = editing ? savedNote : "";
+        if (!editing) document.querySelector("#order-note").value = "";
         document.querySelector("#menu-search").value = "";
         document.querySelector("#menu-category").value = "all";
         renderMenu();
@@ -138,3 +138,20 @@ document.querySelector("#place-order").addEventListener("click", () => {
 });
 
 if (editing) renderSavedPreview();
+
+// Save the order note without closing the window. The button is off until the note is edited.
+const saveNote = document.querySelector("#save-note");
+let noteSaved = false;
+if (saveNote) {
+    document.querySelector("#order-note").addEventListener("input", () => saveNote.disabled = false);
+    saveNote.addEventListener("click", async () => {
+        saveNote.disabled = true;
+        const form = document.querySelector("#order-note-form");
+        const response = await fetch(form.action, { method: "POST", body: new FormData(form) });
+        saveNote.disabled = response.ok;
+        noteSaved = noteSaved || response.ok;
+        feedback.textContent = response.ok ? "Note saved." : "Could not save the note.";
+    });
+    // Reload when the window closes so the order page shows the new note.
+    dialog.addEventListener("close", () => { if (noteSaved) location.reload(); });
+}
