@@ -69,3 +69,30 @@ def add_line_items(order_number, items):
                 "SELECT %s, item_id, %s, customer_price, %s FROM menu WHERE item_id = %s AND available = 1",
                 [order_number, quantity, special_request, menu_item_id],
             )
+
+
+def get_removed_items(order_number):
+    """Return the items removed from one order, one row per unit, oldest first."""
+    with connection.cursor() as cursor:
+        cursor.execute(
+            "SELECT m.name, r.unit_price, r.comment "
+            "FROM removed_item r JOIN menu m ON m.item_id = r.menu_item_id "
+            "WHERE r.order_number = %s ORDER BY r.removed_id",
+            [order_number],
+        )
+        columns = [col[0] for col in cursor.description]
+        return [dict(zip(columns, row)) for row in cursor.fetchall()]
+
+
+def get_subtotals(order_number):
+    """Return (subtotal of what's left, total of removed items) from v_order_totals."""
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT subtotal, removed_total FROM v_order_totals WHERE number = %s", [order_number])
+        return cursor.fetchone()
+
+
+def remove_one_item(line_item_id, employee_id):
+    """Take one unit off a line item and log it in removed_item.
+    The procedure runs its own transaction, so don't call this inside transaction.atomic()."""
+    with connection.cursor() as cursor:
+        cursor.execute("CALL remove_one_item(%s, %s)", [line_item_id, employee_id])
