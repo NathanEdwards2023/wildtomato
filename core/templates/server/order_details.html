@@ -41,13 +41,34 @@
     <section class="table-card preview-order-items" aria-labelledby="line-items-title">
         <h2 id="line-items-title">Line items</h2>
         {% for line in line_items %}
-            <div class="cart-item">
-                <strong>{{ line.quantity }} x {{ line.name }} - ${{ line.unit_price }}</strong>
-                {% if line.comment %}<span>Note: {{ line.comment }}</span>{% endif %}
+            <div class="cart-item" style="justify-content: space-between; flex-wrap: nowrap">
+                <div style="display: grid; gap: 4px">
+                    <strong>{{ line.quantity }} x {{ line.name }} - ${{ line.unit_price }}</strong>
+                    {% if line.comment %}<span>Note: {{ line.comment }}</span>{% endif %}
+                </div>
+                {% if order.status == 'open' %}
+                    <form method="post" action="{% url 'remove_item' order.pk line.line_item_id %}">
+                        {% csrf_token %}
+                        <button type="submit" aria-label="Remove one {{ line.name }}">Remove</button>
+                    </form>
+                {% endif %}
             </div>
         {% empty %}
-            <p>No items on this order yet.</p>
+            {% if not removed_items %}<p>No items on this order yet.</p>{% endif %}
         {% endfor %}
+        {% for item in removed_items %}
+            <div class="cart-item" style="color: #687165; font-style: italic; text-decoration: line-through">
+                <div style="display: grid; gap: 4px">
+                    <span>1 x {{ item.name }} -${{ item.unit_price }}</span>
+                    {% if item.comment %}<span>Note: {{ item.comment }}</span>{% endif %}
+                </div>
+            </div>
+        {% endfor %}
+        <p class="order-subtotal">Subtotal <strong>${{ subtotal }}</strong></p>
+        {% if removed_items %}
+            <p class="order-subtotal">Removed Items <strong>-${{ removed_total }}</strong></p>
+            <p class="order-subtotal">Adjusted Total <strong>${{ items_total }}</strong></p>
+        {% endif %}
     </section>
 
     {% if order.status == 'open' %}
