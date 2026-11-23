@@ -6,7 +6,10 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_POST
 from .models import DiningTable, Employee, TableOrder
-from .special_requests import add_line_items, get_menu, get_order_lines, get_order_total, insert_order
+from .special_requests import (
+    add_line_items, get_menu, get_order_lines, get_order_total, get_removed_items, get_subtotals, insert_order,
+    remove_one_item,
+)
 
 
 def visible_orders(user):
@@ -43,12 +46,33 @@ def order_detail(request, pk):
     order = get_object_or_404(
         visible_orders(request.user).select_related("table", "employee"), pk=pk
     )
+    items_total, removed_total = get_subtotals(order.pk)
     return render(request, "server/order_details.html", {
         "order": order,
         "line_items": get_order_lines(order.pk),
+        "removed_items": get_removed_items(order.pk),
+        "subtotal": items_total + removed_total,
+        "removed_total": removed_total,
+        "items_total": items_total,
         "order_total": get_order_total(order.pk),
         "menu": get_menu() if order.status == TableOrder.Status.OPEN else [],
     })
+
+
+@login_required
+@require_POST
+def remove_item(request, pk, line_item_id):
+    """Take one unit of a line item off an open order."""
+    order = get_object_or_404(visible_orders(request.user), pk=pk)
+    if order.status != TableOrder.Status.OPEN:
+        return HttpResponseBadRequest("Items cannot be removed after payment.")
+    if not any(line["line_item_id"] == line_item_id for line in get_order_lines(order.pk)):
+        return HttpResponseBadRequest("That item is not on this order.")
+    employee = Employee.objects.filter(user=request.user).first()
+    if employee is None:
+        return HttpResponseBadRequest("Your login is not linked to an employee.")
+    remove_one_item(line_item_id, employee.pk)
+    return redirect("order_detail", pk=order.pk)
 
 
 def read_items(request):
