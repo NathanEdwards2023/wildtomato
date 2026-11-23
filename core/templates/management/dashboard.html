@@ -1,0 +1,58 @@
+{% comment %}
+Frontend only: S1, S16, S22-S27. Sample records and interactions live in
+admin_dashboard.js. No reporting queries, payment writes, or permission changes.
+{% endcomment %}
+<section id="admin-reports" hidden aria-labelledby="reports-title">
+    <div class="page-heading">
+        <div>
+            <p class="eyebrow">RESTAURANT OVERVIEW</p>
+            <h1 id="reports-title">Admin dashboard</h1>
+            <p>Review sales, menu performance, staff results, and payments.</p>
+        </div>
+        <a class="button" href="{% url 'home' %}">Back to the floor</a>
+    </div>
+    <p class="report-preview">UI preview: all figures and orders below are sample data. Changes last only until this page reloads.</p>
+
+    <nav class="report-tabs" aria-label="Admin reports">
+        <button type="button" data-report="sales" aria-pressed="true">Sales</button>
+        <button type="button" data-report="menu" aria-pressed="false">Menu performance</button>
+        <button type="button" data-report="staff" aria-pressed="false">Server performance</button>
+        <button type="button" data-report="staffing" aria-pressed="false">Staffing trends</button>
+        <button type="button" data-report="payments" aria-pressed="false">Payments &amp; refunds</button>
+    </nav>
+
+    <form id="report-filters" class="report-filters">
+        <label>Period
+            <select id="report-period">
+                <option value="week">This week</option>
+                <option value="today">Today</option>
+                <option value="previous">Last week</option>
+                <option value="all">Last four weeks</option>
+                <option value="custom">Custom dates</option>
+            </select>
+        </label>
+        <label>From <input type="date" id="report-from" required></label>
+        <label>To <input type="date" id="report-to" required></label>
+        <button type="submit">Apply dates</button>
+    </form>
+    <p id="report-status" role="status" aria-live="polite"></p>
+    <section id="report-content" aria-labelledby="report-section-title"></section>
+
+    <dialog id="report-action" aria-labelledby="report-action-title">
+        <form id="report-action-form">
+            <div class="builder-heading">
+                <h2 id="report-action-title">Payment preview</h2>
+                <button type="button" id="report-action-cancel">Cancel</button>
+            </div>
+            <p id="report-action-description"></p>
+            <div id="payment-fields">
+                <label>Payment method
+                    <select id="report-method"><option value="cash">Cash</option><option value="card">Card</option></select>
+                </label>
+                <label>Amount ($) <input id="report-amount" type="number" min="0.01" step="0.01" required></label>
+            </div>
+            <p>No money is charged or returned. This changes sample data only.</p>
+            <button type="submit" id="report-action-confirm">Confirm preview</button>
+        </form>
+    </dialog>
+</section>
