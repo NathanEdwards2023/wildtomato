@@ -2,6 +2,7 @@
 {% load static %}
 
 {% block content %}
+    <div id="server-floor">
     <div class="page-heading">
         <div>
             <p class="eyebrow">YOUR FLOOR</p>
@@ -39,8 +40,15 @@
             </div>
         {% endfor %}
     </section>
+    </div>
+    {% if user.is_superuser %}
+        {% include "management/dashboard.html" %}
+    {% endif %}
 {% endblock %}
 
 {% block scripts %}
+    {% if user.is_superuser %}
+        <script src="{% static 'core/js/admin_dashboard.js' %}" defer></script>
+    {% endif %}
     <script src="{% static 'core/js/tables.js' %}" defer></script>
 {% endblock %}

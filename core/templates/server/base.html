@@ -5,7 +5,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}Active tables{% endblock %} | Wild Tomato</title>
-    <link rel="stylesheet" href="{% static 'core/css/dashboard.css' %}?v=order-note-1">
+    <link rel="stylesheet" href="{% static 'core/css/dashboard.css' %}?v=admin-dashboard-1">
+    {% if user.is_superuser %}
+        <link rel="stylesheet" href="{% static 'core/css/admin_dashboard.css' %}">
+    {% endif %}
 </head>
 <body>
     <a class="skip-link" href="#main">Skip to content</a>
@@ -13,11 +16,15 @@
     <header>
         <a class="brand" href="{% url 'home' %}">
             Wild Tomato
-            <small>SERVER DASHBOARD</small>
+            <small>{% if user.is_superuser %}ADMIN DASHBOARD{% else %}SERVER DASHBOARD{% endif %}</small>
         </a>
 
         <a class="header-tables" href="{% url 'available_tables' %}">Open Tables</a>
         <a class="header-tables" href="{% url 'home' %}">Active Tables</a>
+
+        {% if user.is_superuser %}
+            <a class="header-tables" href="{% url 'home' %}#admin-reports">Reports</a>
+        {% endif %}
 
         <div class="account">
             <span>{{ user.get_full_name|default:user.get_username }}</span>
